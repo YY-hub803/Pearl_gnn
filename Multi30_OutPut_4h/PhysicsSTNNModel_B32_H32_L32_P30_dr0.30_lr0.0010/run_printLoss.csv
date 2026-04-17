@@ -1,0 +1,12 @@
+Epoch 1, time 2.71, MAELoss_train 709.493, MAELoss_val 505.714,LR 0.001000
+Epoch 2, time 2.46, MAELoss_train 440.915, MAELoss_val 465.722,LR 0.001000
+Epoch 3, time 2.41, MAELoss_train 421.841, MAELoss_val 455.571,LR 0.001000
+Epoch 4, time 2.41, MAELoss_train 415.558, MAELoss_val 466.717,LR 0.001000
+Epoch 5, time 2.37, MAELoss_train 411.265, MAELoss_val 457.571,LR 0.001000
+Epoch 6, time 2.42, MAELoss_train 406.496, MAELoss_val 462.200,LR 0.001000
+Epoch 7, time 2.35, MAELoss_train 403.184, MAELoss_val 458.401,LR 0.001000
+Epoch 8, time 2.27, MAELoss_train 399.100, MAELoss_val 462.664,LR 0.001000
+Epoch 9, time 2.17, MAELoss_train 395.461, MAELoss_val 470.950,LR 0.001000
+Epoch 10, time 2.19, MAELoss_train 392.481, MAELoss_val 463.135,LR 0.001000
+Epoch 11, time 2.20, MAELoss_train 388.974, MAELoss_val 468.743,LR 0.001000
+Epoch 12, time 2.21, MAELoss_train 386.013, MAELoss_val 472.843,LR 0.001000
