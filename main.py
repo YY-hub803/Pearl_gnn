@@ -41,7 +41,7 @@ hyper_params = {
     "drop_rate": 0.3,
     "warmup_epochs":10,
     "base_lr":1e-3,
-    "BACKEND":"PhysicsSTNNModel", # select model    GcnLstmModel/PhysicsSTNNModel
+    "BACKEND":"GcnLstmModel", # select model    GcnLstmModel/PhysicsSTNNModel
     "lossFun":'MAE'
 }
 
@@ -107,13 +107,13 @@ dir_x = {
     "x_pet": os.path.join(dir_input, 'input_xforce_pet.csv'),
     "x_temp": os.path.join(dir_input, 'input_xforce_temp.csv'),
     "x_vp": os.path.join(dir_input, 'input_xforce_vp.csv'),
-    # "x_tp": os.path.join(dir_input, 'input_yobs_TP.csv'),
+    "x_tp": os.path.join(dir_input, 'input_yobs_TP.csv'),
     "x_do": os.path.join(dir_input, 'input_yobs_DO.csv'),
     "x_pre": os.path.join(dir_input, 'input_xforce_prcp.csv'),
     "x_TEMP": os.path.join(dir_input, 'input_yobs_temp.csv'),
     # "x_tn": os.path.join(dir_input, 'input_yobs_TN.csv'),
-    "x_ec": os.path.join(dir_input, 'input_yobs_EC.csv'),
-    "x_ntu": os.path.join(dir_input, 'input_yobs_NTU.csv'),
+    # "x_ec": os.path.join(dir_input, 'input_yobs_EC.csv'),
+    # "x_ntu": os.path.join(dir_input, 'input_yobs_NTU.csv'),
     "x_cod": os.path.join(dir_input, 'input_yobs_CODMn.csv'),
     # "x_nhn": os.path.join(dir_input, 'input_yobs_NH-N.csv'),
 }

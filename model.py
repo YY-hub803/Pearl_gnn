@@ -16,6 +16,56 @@ class LSTMLayer(nn.Module):
         lstm_out,_ = self.lstm(x_in)
         return lstm_out.reshape(B, N, T, self.hidden_size)
 
+
+class GATLayer(nn.Module):
+    def __init__(self, input_size, hidden_size, edge_index):
+        super().__init__()
+        self.edge_index = edge_index
+        self.hidden_size = hidden_size
+        # 1. 节点特征的线性变换权重
+        self.W = nn.Linear(input_size, hidden_size, bias=False)
+
+        # 2. 注意力机制权重 (Source 和 Target)
+        self.a_l = nn.Parameter(torch.empty(hidden_size, 1))
+        self.a_r = nn.Parameter(torch.empty(hidden_size, 1))
+
+        # 3. 偏置项 (PyG 默认包含偏置)
+        self.bias = nn.Parameter(torch.empty(hidden_size))
+        self._reset_parameters()
+    def _reset_parameters(self):
+        nn.init.xavier_uniform_(self.W.weight)
+        nn.init.xavier_uniform_(self.a_l)
+        nn.init.xavier_uniform_(self.a_r)
+        nn.init.zeros_(self.bias)
+
+    def forward(self, x):
+        # x.shape: [B, N, T, F]
+        B, N, T, F_in = x.shape
+
+        x_in = x.transpose(1, 2)
+        # h.shape: [B, T, N, hidden_size]
+        h = self.W(x_in)
+
+        # 分别计算源节点与目标节点的注意力得分
+        attn_l = torch.matmul(h, self.a_l)  # [B, T, N, 1]
+        attn_r = torch.matmul(h, self.a_r)  # [B, T, N, 1]
+        # 注意力系数e [B, T, N, N]
+        e = attn_l + attn_r.transpose(-1, -2)
+        e = F.leaky_relu(e, negative_slope=0.2)
+
+        # 邻接矩阵掩码
+        # 根据 edge_index 动态构建稠密邻接矩阵 (如果图结构固定，此步可移至 __init__ 缓存优化)
+        adj = torch.zeros((N, N), device=x.device, dtype=torch.bool)
+        adj[self.edge_index[0], self.edge_index[1]] = True
+        e = e.masked_fill(~adj, float('-inf'))
+
+        # 注意力归一化与特征聚合
+        alpha = F.softmax(e, dim=-1)  # [B, T, N, N]
+        out = torch.matmul(alpha, h) + self.bias  # [B, T, N, hidden_size]
+        # 调换回 [B, N, T, hidden_size]
+        out = out.transpose(1, 2)
+        return F.gelu(out)
+
 class GCNLayer(nn.Module):
     def __init__(self, input_size, hidden_size,edge_index):
         super().__init__()
@@ -43,18 +93,21 @@ class GcnLstmModel(nn.Module):
         self.pred_len = pred_len
         self.edge_index = edge_index.to(device)
         self.fc = nn.Linear(nx, hidden_size)
-        self.conv1 = GCNLayer(hidden_size,hidden_size,self.edge_index)
-        self.conv2 = GCNLayer(hidden_size,hidden_size,self.edge_index)
+        self.conv1 = GATLayer(hidden_size,hidden_size,self.edge_index)
+        self.conv2 = GATLayer(hidden_size,hidden_size,self.edge_index)
         self.lstm = LSTMLayer(hidden_size,hidden_size,num_layer)
         self.norm_l = nn.LayerNorm(hidden_size)
+        self.norm_g = nn.LayerNorm(hidden_size)
         self.dense = nn.Linear(hidden_size, self.pred_len*self.ny)
     def forward(self, x):
         B, N, T, _ = x.shape
         x_h = self.fc(x)
         gout1 = self.conv1(x_h)
         gout2 = self.conv2(gout1)
-        lout1 = self.lstm(gout2)
-        h = self.norm_l(lout1)
+        lout1 = self.lstm(x_h)
+        l_nm = self.norm_l(lout1)
+        g_nm = self.norm_g(gout2)
+        h = g_nm+l_nm
         out = self.dense(h[:,:,-1:,:])
         return out.reshape(B,N, self.pred_len, self.ny)
 
